@@ -20,7 +20,7 @@ sudo apt-get install libopencv-dev
 
 - **Boost**: Install the Boost libraries
 ```sh
-    sudo apt-get install libboost-all-dev
+sudo apt-get install libboost-all-dev
 ```
 
 - **Make**: Ensure you have `make` installed to build the project using the provided Makefile.
@@ -33,7 +33,6 @@ sudo apt-get install make
 sudo apt-get install git
 ```
 
-- 
 ## Files
 - `server.cpp`: The server application
 - `client.cpp`: The client application
