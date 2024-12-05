@@ -114,7 +114,7 @@ void handle_video_upload(int sender_socket, std::istringstream& iss) {
 
             // Ask the receiver to start their video receiver
             send_message(receiver_socket, "Prepare video receiver\n");
-            sleep(0.5); // Wait for the receiver to start the video receiver
+            sleep(1); // Wait for the receiver to start the video receiver
 
             // Start streaming video to the receiver
             std::string streaming_command = "./stream_test/sender uploaded_" + file_name + " " + client_ip + " 5000";

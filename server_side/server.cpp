@@ -1,6 +1,7 @@
 #include "server_func.h"
 
 int PORT = 8080;
+const int MAX_CLIENTS = 15;
 extern std::unordered_map<int, std::string> client_usernames;
 extern std::map<std::string, std::string> users;
 int main(int argc, char* argv[]) {
@@ -39,6 +40,7 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
 
+    int active_clients = 0;
     std::cout << "Server is running on port " << PORT << std::endl;
 
     while (true) {
@@ -48,13 +50,23 @@ int main(int argc, char* argv[]) {
         }
 
         std::cout << "New client connected: " << new_socket << std::endl;
+        active_clients++;
 
-        // Create a new thread to handle the client
-        pthread_t thread_id;
-        int* socket_ptr = (int*)malloc(sizeof(int));
-        *socket_ptr = new_socket;
-        pthread_create(&thread_id, nullptr, handle_client, socket_ptr);
-        pthread_detach(thread_id); // Detach thread to avoid blocking
+        if (active_clients >= MAX_CLIENTS) {
+            std::cout << "Max clients reached. Refuse to serve." << std::endl;
+        }
+        else {
+            std::cout << "Active clients: " << active_clients << std::endl;
+
+            
+            // Create a new thread to handle the client
+            pthread_t thread_id;
+            int* socket_ptr = (int*)malloc(sizeof(int));
+            *socket_ptr = new_socket;
+            pthread_create(&thread_id, nullptr, handle_client, socket_ptr);
+            pthread_detach(thread_id); // Detach thread to avoid blocking
+        }
+
     }
 
     return 0;

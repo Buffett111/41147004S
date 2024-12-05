@@ -1,6 +1,6 @@
-# Simple Client-Server Application
+# Advanced Client-Server Application
 
-This project demonstrates a simple client-server application using sockets for network communication. The server can handle multiple clients, allowing them to register, log in, and send text messages.
+This project demonstrates an advanced client-server application using sockets for network communication. The server can handle multiple clients, allowing them to register, log in, and communicate with each other. Clients can send text messages, transfer files, and even stream video with other users. The application leverages OpenSSL for secure communication and OpenCV for video streaming capabilities.
 
 ## Prerequisites
 

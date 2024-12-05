@@ -75,6 +75,7 @@ int main(int argc, char* argv[]) {
             std::cout << "4. Logout (LOGOUT username)\n";
             std::cout << "5. Exit\n";
             std::cout << "6: send a file\n";
+            std::cout << "7: steam a video\n";
             std::cout << "Enter your choice: ";
         } else {
             std::cout << "\n--- Menu ---\n";

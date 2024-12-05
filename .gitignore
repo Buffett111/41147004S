@@ -5,12 +5,15 @@
 *.mov
 *.wmv
 
+*.txt
 client
 server
+
 
 stream_test/sender
 stream_test/receiver
 
+data/chat_records.csv
 # Ignore wxWidgets-3.2.2 directory
 wxWidgets-3.2.2/
 
