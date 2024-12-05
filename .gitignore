@@ -1,0 +1,9 @@
+# Ignore any video file
+*.mp4
+*.avi
+*.mkv
+*.mov
+*.wmv
+
+# Ignore wxWidgets-3.2.2 directory
+wxWidgets-3.2.2/

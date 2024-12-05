@@ -1,0 +1,14 @@
+{
+    "files.associations": {
+        "*.ipp": "cpp",
+        "array": "cpp",
+        "hash_map": "cpp",
+        "any": "cpp",
+        "string_view": "cpp",
+        "span": "cpp",
+        "iostream": "cpp",
+        "optional": "cpp",
+        "variant": "cpp",
+        "ostream": "cpp"
+    }
+}
