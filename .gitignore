@@ -5,5 +5,18 @@
 *.mov
 *.wmv
 
+client
+server
+
+stream_test/sender
+stream_test/receiver
+
 # Ignore wxWidgets-3.2.2 directory
 wxWidgets-3.2.2/
+
+# Ignore any file with .o extension
+*.o
+server_side/*.o
+client_side/*.o
+Encrypt/*.o
+stream_test/*.o

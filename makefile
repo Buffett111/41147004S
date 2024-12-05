@@ -18,7 +18,7 @@ SERVER_TARGET = server
 CLIENT_TARGET = client
 
 # Default target
-all: $(SERVER_TARGET) $(CLIENT_TARGET)
+all: $(SERVER_TARGET) $(CLIENT_TARGET) stream_test
 
 # Link the server executable
 $(SERVER_TARGET): $(SERVER_OBJS)
@@ -27,6 +27,7 @@ $(SERVER_TARGET): $(SERVER_OBJS)
 # Link the client executable
 $(CLIENT_TARGET): $(CLIENT_OBJS)
 	$(CXX) $(CXXFLAGS) -o $(CLIENT_TARGET) $(CLIENT_OBJS) $(LIBS)
+
 # Compile source files into object files
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
@@ -34,6 +35,11 @@ $(CLIENT_TARGET): $(CLIENT_OBJS)
 # Clean up build files
 clean:
 	rm -f $(SERVER_TARGET) $(CLIENT_TARGET) $(SERVER_OBJS) $(CLIENT_OBJS)
+	$(MAKE) -C stream_test clean
 
 # Phony targets
-.PHONY: all clean
+.PHONY: all clean stream_test
+
+# Navigate to stream_test directory and execute Makefile there
+stream_test:
+	$(MAKE) -C stream_test
