@@ -3,6 +3,7 @@
 #include <openssl/bio.h>
 #include <openssl/buffer.h>
 #include <cstring>
+#include <string.h>
 
 std::string base64_encode(const unsigned char* buffer, size_t length) {
     BIO* bio, *b64;

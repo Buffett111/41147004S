@@ -2,6 +2,7 @@
 #include "Encryption.h"
 #include <mutex>
 #include <unistd.h>
+#include <string.h>
 
 std::unordered_map<int, std::string> client_usernames;
 std::map<std::string, std::string> users;
