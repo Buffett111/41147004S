@@ -20,3 +20,4 @@ server_side/*.o
 client_side/*.o
 Encrypt/*.o
 stream_test/*.o
+*.Identifier
