@@ -3,7 +3,7 @@
 #include <boost/asio.hpp>
 #include <thread>
 #include <chrono>
-#include <csignal>
+
 using namespace std;
 using namespace cv;
 using boost::asio::ip::udp;

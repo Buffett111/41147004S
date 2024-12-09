@@ -46,7 +46,7 @@ void send_file_to_receiver(int receiver_socket, const std::string& file_name) {
     }
 
     file.close();
-    send_message(receiver_socket, "File transfer complete.\n");
+    //send_message(receiver_socket, "File transfer complete.\n");
 }
 
 void handle_file_transfer(int sender_socket, std::istringstream& iss) {
