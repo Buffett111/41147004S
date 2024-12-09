@@ -20,7 +20,7 @@
 #include <openssl/aes.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-
+#define BUFFER_SIZE 1024
 // Function declarations
 void load_users();
 void save_user(const std::string& username, const std::string& password);

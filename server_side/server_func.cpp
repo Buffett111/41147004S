@@ -8,7 +8,69 @@ std::unordered_map<int, std::string> client_usernames;
 std::map<std::string, std::string> users;
 std::mutex file_mutex;
 
+void send_encrypted(int socket_fd, const std::string& encrypted_data) {
+    // 添加長度標記（4 字節）
+    uint32_t length = htonl(encrypted_data.size()); // 將長度轉為網絡字節序
+    send(socket_fd, &length, sizeof(length), 0);    // 傳輸長度
+    std::cout << "Sending encrypted data: " << length << std::endl;
+    send(socket_fd, encrypted_data.c_str(), encrypted_data.size(), 0); // 傳輸密文
+}
+std::string receive_encrypted(int socket_fd,int &bytes_read) {
+    // 接收長度標記
+    uint32_t length;
+    recv(socket_fd, &length, sizeof(length), 0);
+    length = ntohl(length); // 將長度轉回主機字節序
+
+    // 接收密文數據
+    char* buffer = new char[length];
+    std::cout << "Receiving encrypted data: " << length << std::endl;
+    bytes_read= recv(socket_fd, buffer, length, 0);
+
+    std::string encrypted_data(buffer, length);
+    delete[] buffer;
+    return encrypted_data;
+}
+
 size_t receive_file(int client_socket, const std::string& file_name) {
+    std::lock_guard<std::mutex> lock(file_mutex); // Lock the mutex
+
+    std::ofstream file("uploaded_" + file_name, std::ios::binary);
+    if (!file.is_open()) {
+        send_message(client_socket, "Error: Could not create file on server.\n");
+        return -1;
+    }
+    // size_t file_size=0;
+    // char buffer[1024];
+    // int bytes_read;
+    // while ((bytes_read = read(client_socket, buffer, sizeof(buffer))) > 0) {
+    //     file.write(buffer, bytes_read);
+    //     file_size+=bytes_read;
+    //     if (bytes_read < sizeof(buffer)) {
+    //         break; // End of file
+    //     }
+    // }
+    // file.close();
+    size_t file_size=0;
+    int bytes_read;
+    while (true)
+    {
+        std::string encrypted_data = receive_encrypted(client_socket,bytes_read);
+        std::string decrypted_data = decrypt(encrypted_data);
+        file_size+=decrypted_data.size();
+        file.write(decrypted_data.c_str(), decrypted_data.size());
+        if (decrypted_data.size() < 1024) {
+            break; // End of file
+        }
+    }
+    file.close();
+    
+    
+    send_message(client_socket, "File uploaded successfully.\n");
+    return file_size;
+    
+}
+
+size_t receive_video(int client_socket, const std::string& file_name) {
     std::lock_guard<std::mutex> lock(file_mutex); // Lock the mutex
 
     std::ofstream file("uploaded_" + file_name, std::ios::binary);
@@ -26,7 +88,6 @@ size_t receive_file(int client_socket, const std::string& file_name) {
             break; // End of file
         }
     }
-
     file.close();
     send_message(client_socket, "File uploaded successfully.\n");
     return file_size;
@@ -40,12 +101,15 @@ void send_file_to_receiver(int receiver_socket, const std::string& file_name) {
         return;
     }
 
-    char buffer[1024];
+     // Send the file content
+    char buffer[BUFFER_SIZE];
     while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
-        send(receiver_socket, buffer, file.gcount(), 0);
+        std::string encrypted_data = encrypt(std::string(buffer, file.gcount()));
+        send_encrypted(receiver_socket, encrypted_data);
+        //send(client_socket, buffer, file.gcount(), 0);
     }
-
     file.close();
+    std::cout << "File sent to receiver.\n";
     //send_message(receiver_socket, "File transfer complete.\n");
 }
 
@@ -94,7 +158,7 @@ void handle_video_upload(int sender_socket, std::istringstream& iss) {
     iss >> receiver_username >> file_name;
 
     // Save the video from the sender
-    size_t file_size = receive_file(sender_socket, file_name);
+    size_t file_size = receive_video(sender_socket, file_name);
     if (file_size > 0) {
         std::cout << "Video file uploaded: " << file_name << " (" << file_size << " bytes)\n";
     } else {

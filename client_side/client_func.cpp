@@ -19,7 +19,7 @@ void upload_video_to_server(int client_socket, const std::string& receiver_usern
     }
 
     // Send the UPLOADVIDEO command
-    std::string command = "UPLOADVIDEO " + receiver_username + " " + file_name;
+    std::string command = "UPLOADVIDEO " + receiver_username + " " + file_name+"\n";
     command = encrypt(command);
     send(client_socket, command.c_str(), command.size(), 0);
 
@@ -31,6 +31,29 @@ void upload_video_to_server(int client_socket, const std::string& receiver_usern
     file.close();
 
     std::cout << "Video uploaded successfully to the server.\n";
+}
+
+void send_encrypted(int socket_fd, const std::string& encrypted_data) {
+    // 添加長度標記（4 字節）
+    uint32_t length = htonl(encrypted_data.size()); // 將長度轉為網絡字節序
+    send(socket_fd, &length, sizeof(length), 0);    // 傳輸長度
+    std::cout << "Sending encrypted data: " << length << std::endl;
+    send(socket_fd, encrypted_data.c_str(), encrypted_data.size(), 0); // 傳輸密文
+}
+std::string receive_encrypted(int socket_fd,int &bytes_read) {
+    // 接收長度標記
+    uint32_t length;
+    recv(socket_fd, &length, sizeof(length), 0);
+    length = ntohl(length); // 將長度轉回主機字節序
+
+    // 接收密文數據
+    char* buffer = new char[length];
+    std::cout << "Receiving encrypted data: " << length << std::endl;
+    bytes_read= recv(socket_fd, buffer, length, 0);
+
+    std::string encrypted_data(buffer, length);
+    delete[] buffer;
+    return encrypted_data;
 }
 
 
@@ -49,7 +72,9 @@ void upload_file_to_server(int client_socket, const std::string& receiver_userna
     // Send the file content
     char buffer[BUFFER_SIZE];
     while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
-        send(client_socket, buffer, file.gcount(), 0);
+        std::string encrypted_data = encrypt(std::string(buffer, file.gcount()));
+        send_encrypted(client_socket, encrypted_data);
+        //send(client_socket, buffer, file.gcount(), 0);
     }
     file.close();
 
@@ -182,28 +207,37 @@ void receive_file(int client_socket, const std::string& file_name,const size_t f
             }
         }
 
-        bytes_read = recv(client_socket, buffer, sizeof(buffer), 0);
+        std::string encrypted_data = receive_encrypted(client_socket,bytes_read);
+        std::string decrypted_data = decrypt(encrypted_data);
+        total_bytes+=decrypted_data.size();
+        file.write(decrypted_data.c_str(), decrypted_data.size());
         // std::cout << "Bytes read: " << bytes_read << std::endl;
-        // std::cout << "Total bytes: " << total_bytes << std::endl;
-        // std::cout << "File size: " << file_size << std::endl;
-        // std::cout << "Buffer: " << buffer << std::endl; // Print buffer contents
-
-        if (bytes_read > 0) {
-            file.write(buffer, bytes_read);
-            total_bytes += bytes_read;
-
-            // Display progress
-            float progress = (float)total_bytes / file_size * 100.0f;
-            std::cout << "\rProgress: " << (int)progress << "%";
-            std::cout.flush();
-
-            if ( (total_bytes >= file_size)  ) {
-                break; // End of file
-            }
-        } else {
-            std::cout << "\nFile transfer interrupted or completed.\n";
-            break;
+        if (decrypted_data.size() < 1024) {
+            break; // End of file
         }
+
+        // bytes_read = recv(client_socket, buffer, sizeof(buffer), 0);
+        // // std::cout << "Bytes read: " << bytes_read << std::endl;
+        // // std::cout << "Total bytes: " << total_bytes << std::endl;
+        // // std::cout << "File size: " << file_size << std::endl;
+        // // std::cout << "Buffer: " << buffer << std::endl; // Print buffer contents
+
+        // if (bytes_read > 0) {
+        //     file.write(buffer, bytes_read);
+        //     total_bytes += bytes_read;
+
+        //     // Display progress
+        //     float progress = (float)total_bytes / file_size * 100.0f;
+        //     std::cout << "\rProgress: " << (int)progress << "%";
+        //     std::cout.flush();
+
+        //     if ( (total_bytes >= file_size)  ) {
+        //         break; // End of file
+        //     }
+        // } else {
+        //     std::cout << "\nFile transfer interrupted or completed.\n";
+        //     break;
+        // }
     }
 
     file.close();
