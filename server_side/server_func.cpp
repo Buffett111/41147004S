@@ -89,7 +89,7 @@ size_t receive_video(int client_socket, const std::string& file_name) {
     char buffer[1024];
     int bytes_read;
     while ( true ) {
-        bytes_read = recv(client_socket, buffer, sizeof(buffer),MSG_WAITALL); //MSG_WAITALL to ensure full file is received
+        bytes_read = recv(client_socket, buffer, sizeof(buffer),0); //MSG_WAITALL to ensure full file is received
         std::string tmp(buffer, bytes_read);
         if (tmp.find(token) != std::string::npos) {
             std::cout << "Video file received.\n";
