@@ -7,7 +7,7 @@
 std::unordered_map<int, std::string> client_usernames;
 std::map<std::string, std::string> users;
 std::mutex file_mutex;
-
+const char token[]="U1QsoQA1aUe9MSClefpA8lfZBi4RRsDH1kXjp0ufQF7dG6rRi8crF5gDHFIDJUB";
 void send_encrypted(int socket_fd, const std::string& encrypted_data) {
     // 添加長度標記（4 字節）
     uint32_t length = htonl(encrypted_data.size()); // 將長度轉為網絡字節序
@@ -56,11 +56,18 @@ size_t receive_file(int client_socket, const std::string& file_name) {
     {
         std::string encrypted_data = receive_encrypted(client_socket,bytes_read);
         std::string decrypted_data = decrypt(encrypted_data);
+        //if find EOF, break
+        if (decrypted_data.find(token) != std::string::npos)
+        {
+            std::cout << "File received successfully.\n";
+            std::cout<<decrypted_data<<std::endl;
+            break;
+        }
         file_size+=decrypted_data.size();
         file.write(decrypted_data.c_str(), decrypted_data.size());
-        if (decrypted_data.size() < 1024) {
-            break; // End of file
-        }
+        // if (decrypted_data.size() < 1024) {
+        //     break; // End of file
+        // }
     }
     file.close();
     
@@ -81,12 +88,18 @@ size_t receive_video(int client_socket, const std::string& file_name) {
     size_t file_size=0;
     char buffer[1024];
     int bytes_read;
-    while ((bytes_read = read(client_socket, buffer, sizeof(buffer))) > 0) {
+    while ( true ) {
+        bytes_read = read(client_socket, buffer, sizeof(buffer));
+        std::string tmp(buffer, bytes_read);
+        if (tmp.find(token) != std::string::npos) {
+            std::cout << "Video file received.\n";
+            break;
+        }
         file.write(buffer, bytes_read);
         file_size+=bytes_read;
-        if (bytes_read < sizeof(buffer)) {
-            break; // End of file
-        }
+        // if (bytes_read < sizeof(buffer)) {
+        //     break; // End of file
+        // }
     }
     file.close();
     send_message(client_socket, "File uploaded successfully.\n");
@@ -108,6 +121,8 @@ void send_file_to_receiver(int receiver_socket, const std::string& file_name) {
         send_encrypted(receiver_socket, encrypted_data);
         //send(client_socket, buffer, file.gcount(), 0);
     }
+    std::string encrypted_data = encrypt(std::string(token,64));
+    send_encrypted(receiver_socket, encrypted_data);
     file.close();
     std::cout << "File sent to receiver.\n";
     //send_message(receiver_socket, "File transfer complete.\n");
@@ -179,7 +194,7 @@ void handle_video_upload(int sender_socket, std::istringstream& iss) {
 
             // Ask the receiver to start their video receiver
             send_message(receiver_socket, "Prepare video receiver\n");
-            sleep(1); // Wait for the receiver to start the video receiver
+            sleep(2); // Wait for the receiver to start the video receiver
 
             // Start streaming video to the receiver
             std::string streaming_command = "./stream_test/sender uploaded_" + file_name + " " + client_ip + " 5000";
@@ -198,9 +213,7 @@ void send_message(int client_socket, const std::string& message) {
     send(client_socket, enc_message.c_str(), enc_message.size(), 0);
 }
 
-void send_file(int client_socket, const std::string& file_name) {
-    
-}
+
 
 
 // Function to load users from CSV file

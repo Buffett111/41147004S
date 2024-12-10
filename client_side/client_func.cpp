@@ -4,6 +4,8 @@ extern std::mutex file_transfer_mutex;
 extern std::condition_variable file_transfer_cv;
 bool file_transfer_in_progress = false;
 
+const char token[]="U1QsoQA1aUe9MSClefpA8lfZBi4RRsDH1kXjp0ufQF7dG6rRi8crF5gDHFIDJUB";
+
 std::atomic<bool> keep_running(true);
 std::mutex file_mutex;
 std::string username, password;
@@ -28,6 +30,7 @@ void upload_video_to_server(int client_socket, const std::string& receiver_usern
     while (file.read(buffer, sizeof(buffer)) || file.gcount() > 0) {
         send(client_socket, buffer, file.gcount(), 0);
     }
+    send(client_socket, token, 64 , 0 ); 
     file.close();
 
     std::cout << "Video uploaded successfully to the server.\n";
@@ -76,6 +79,8 @@ void upload_file_to_server(int client_socket, const std::string& receiver_userna
         send_encrypted(client_socket, encrypted_data);
         //send(client_socket, buffer, file.gcount(), 0);
     }
+    std::string encrypted_data = encrypt(token);
+    send_encrypted(client_socket, encrypted_data);
     file.close();
 
     std::cout << "File uploaded successfully to the server.\n";
@@ -209,12 +214,18 @@ void receive_file(int client_socket, const std::string& file_name,const size_t f
 
         std::string encrypted_data = receive_encrypted(client_socket,bytes_read);
         std::string decrypted_data = decrypt(encrypted_data);
+        //if find EOF, break
+        if (decrypted_data.find(token) != std::string::npos)
+        {
+            std::cout << "Found token,File received successfully.\n";
+            break;
+        }
         total_bytes+=decrypted_data.size();
         file.write(decrypted_data.c_str(), decrypted_data.size());
         // std::cout << "Bytes read: " << bytes_read << std::endl;
-        if (decrypted_data.size() < 1024) {
-            break; // End of file
-        }
+        // if (decrypted_data.size() < 1024) {
+        //     break; // End of file
+        // }
 
         // bytes_read = recv(client_socket, buffer, sizeof(buffer), 0);
         // // std::cout << "Bytes read: " << bytes_read << std::endl;
