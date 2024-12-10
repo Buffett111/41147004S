@@ -65,9 +65,9 @@ size_t receive_file(int client_socket, const std::string& file_name) {
         }
         file_size+=decrypted_data.size();
         file.write(decrypted_data.c_str(), decrypted_data.size());
-        // if (decrypted_data.size() < 1024) {
-        //     break; // End of file
-        // }
+        if (decrypted_data.size() <= 0 ) {
+            break; // End of file
+        }
     }
     file.close();
     
@@ -97,9 +97,10 @@ size_t receive_video(int client_socket, const std::string& file_name) {
         }
         file.write(buffer, bytes_read);
         file_size+=bytes_read;
-        // if (bytes_read < sizeof(buffer)) {
-        //     break; // End of file
-        // }
+        if (bytes_read <= 0) {
+            std::cout << "File transfer interrupted or completed.\n";
+            break; // End of file
+        }
     }
     file.close();
     send_message(client_socket, "File uploaded successfully.\n");

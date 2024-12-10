@@ -223,9 +223,10 @@ void receive_file(int client_socket, const std::string& file_name,const size_t f
         total_bytes+=decrypted_data.size();
         file.write(decrypted_data.c_str(), decrypted_data.size());
         // std::cout << "Bytes read: " << bytes_read << std::endl;
-        // if (decrypted_data.size() < 1024) {
-        //     break; // End of file
-        // }
+        if (decrypted_data.size() <= 0) {
+            std::cout << "File transfer interrupted or completed.\n";
+            break; // End of file
+        }
 
         // bytes_read = recv(client_socket, buffer, sizeof(buffer), 0);
         // // std::cout << "Bytes read: " << bytes_read << std::endl;
