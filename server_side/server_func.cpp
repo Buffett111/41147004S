@@ -24,7 +24,7 @@ std::string receive_encrypted(int socket_fd,int &bytes_read) {
     // 接收密文數據
     char* buffer = new char[length];
     std::cout << "Receiving encrypted data: " << length << std::endl;
-    bytes_read= recv(socket_fd, buffer, length, 0);
+    bytes_read= recv(socket_fd, buffer, length, MSG_WAITALL);
 
     std::string encrypted_data(buffer, length);
     delete[] buffer;
@@ -89,7 +89,7 @@ size_t receive_video(int client_socket, const std::string& file_name) {
     char buffer[1024];
     int bytes_read;
     while ( true ) {
-        bytes_read = read(client_socket, buffer, sizeof(buffer));
+        bytes_read = recv(client_socket, buffer, sizeof(buffer),MSG_WAITALL); //MSG_WAITALL to ensure full file is received
         std::string tmp(buffer, bytes_read);
         if (tmp.find(token) != std::string::npos) {
             std::cout << "Video file received.\n";

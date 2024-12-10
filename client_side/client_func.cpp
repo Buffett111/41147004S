@@ -52,7 +52,7 @@ std::string receive_encrypted(int socket_fd,int &bytes_read) {
     // 接收密文數據
     char* buffer = new char[length];
     std::cout << "Receiving encrypted data: " << length << std::endl;
-    bytes_read= recv(socket_fd, buffer, length, 0);
+    bytes_read= recv(socket_fd, buffer, length, MSG_WAITALL);
 
     std::string encrypted_data(buffer, length);
     delete[] buffer;
