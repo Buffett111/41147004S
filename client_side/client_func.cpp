@@ -104,7 +104,7 @@ void* receive_messages(void* arg) {
                 partial_message.erase(0, pos + 1);
 
                 // Handle specific server messages
-                if (message.find("FILEOFFER") != std::string::npos) {
+                if (message.find("FILEOFFER") != std::string::npos && login) {
                     // Extract file name and sender details
                     //format FILEOFFER chat_records.txt from Andy file_size 1000
                     std::string file_name = message.substr(message.find(" ") + 1, message.find(" from") - message.find(" ") - 1);
@@ -156,14 +156,15 @@ void* receive_messages(void* arg) {
                 } else if (message.find("Logout successful!") != std::string::npos) {
                     login = false;
                     std::cout << "You have logged out." << std::endl;
-                } else if (message.find("Prepare video receiver") != std::string::npos) { //format start video video.mp4
+                } else if (message.find("Prepare video receiver") != std::string::npos && login) { //format start video video.mp4
                     std::cout << "Preparing to receive video stream..." << std::endl;
                     std::string receiver_command = "./stream_test/receiver 5000";
                     system(receiver_command.c_str());
-                } else if (message.find("end video") != std::string::npos) {
+                } else if (message.find("end video") != std::string::npos && login) {
                     std::cout << "Video streaming ended." << std::endl;
                 } else {
-                    std::cout << "\n[Server]: " << message << std::endl;
+                    if(login)
+                        std::cout << "\n[Server]: " << message << std::endl;
                 }
 
                 std::cout << "> ";

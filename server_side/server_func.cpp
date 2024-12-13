@@ -3,6 +3,7 @@
 #include <mutex>
 #include <unistd.h>
 #include <string.h>
+#include<sys/time.h>
 
 std::unordered_map<int, std::string> client_usernames;
 std::map<std::string, std::string> users;
@@ -136,6 +137,8 @@ void handle_file_transfer(int sender_socket, std::istringstream& iss) {
     // Save the file from the sender
     size_t file_size=receive_file(sender_socket, file_name);
     std::cout<<"Ask Client to accept file\n";
+    struct timeval timenout;
+    
     // Notify the receiver
     for (auto& pair : client_usernames) {
         if (pair.second == receiver_username) {
@@ -146,7 +149,7 @@ void handle_file_transfer(int sender_socket, std::istringstream& iss) {
             std::cout<<"Asking Client "<< client_usernames[receiver_socket] << " to accept file\n";
             send_message(receiver_socket, "FILEOFFER " + file_name + " from " + client_usernames[sender_socket] +" file_size "+ std::to_string(file_size) + "\n");
 
-            // Wait for receiver's response
+
             char buffer[1024];
             int bytes_read = recv(receiver_socket, buffer, sizeof(buffer), 0);
             std::string response(buffer, bytes_read);
@@ -164,8 +167,10 @@ void handle_file_transfer(int sender_socket, std::istringstream& iss) {
     }
 
     // Receiver not found
+    printf("Error: Receiver not online.\n");
     send_message(sender_socket, "Error: Receiver not online.\n");
     std::remove(("uploaded_" + file_name).c_str()); // Delete the file
+    return;
 }
 
 
@@ -281,6 +286,14 @@ bool check_login(const std::string& username, const std::string& password) {
     return users[username] == password;
 }
 
+bool check_logout(const std::string& username) {
+    // Check if username exists and the password is correct
+    if (users.find(username) == users.end()) {
+        return false;
+    }
+    return true;
+}
+
 // Function to handle client requests
 void* handle_client(void* arg) {
     int client_socket = *(int*)arg;
@@ -313,6 +326,7 @@ void* handle_client(void* arg) {
 
                 std::cout << "Client logged out: " << client_socket << std::endl;
                 send_message(client_socket, "Logout successful!\n");
+                client_usernames.erase(client_socket);
                 //client_usernames.erase(client_socket);
                 login = false; // Ensure login status is reset
             } else if (command == "LOGIN") {
