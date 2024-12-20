@@ -68,7 +68,7 @@ void upload_file_to_server(int client_socket, const std::string& receiver_userna
     }
 
     // Send the UPLOADFILE command
-    std::string command = "UPLOADFILE " + receiver_username + " " + file_name;
+    std::string command = "UPLOADFILE " + receiver_username + " " + file_name+"\n";
     command = encrypt(command);
     send(client_socket, command.c_str(), command.size(), 0);
     sleep(1);
