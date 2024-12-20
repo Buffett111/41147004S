@@ -204,7 +204,7 @@ void handle_video_upload(int sender_socket, std::istringstream& iss) {
 
             // Start streaming video to the receiver
             std::string streaming_command = "./stream_test/sender uploaded_" + file_name + " " + client_ip + " 5000";
-            std::cout << "Streaming video: " << streaming_command << "\n";
+            std::cout << "Streaming video...\n";
             system(streaming_command.c_str());
 
             break;
