@@ -228,29 +228,6 @@ void receive_file(int client_socket, const std::string& file_name,const size_t f
             std::cout << "File transfer interrupted or completed.\n";
             break; // End of file
         }
-
-        // bytes_read = recv(client_socket, buffer, sizeof(buffer), 0);
-        // // std::cout << "Bytes read: " << bytes_read << std::endl;
-        // // std::cout << "Total bytes: " << total_bytes << std::endl;
-        // // std::cout << "File size: " << file_size << std::endl;
-        // // std::cout << "Buffer: " << buffer << std::endl; // Print buffer contents
-
-        // if (bytes_read > 0) {
-        //     file.write(buffer, bytes_read);
-        //     total_bytes += bytes_read;
-
-        //     // Display progress
-        //     float progress = (float)total_bytes / file_size * 100.0f;
-        //     std::cout << "\rProgress: " << (int)progress << "%";
-        //     std::cout.flush();
-
-        //     if ( (total_bytes >= file_size)  ) {
-        //         break; // End of file
-        //     }
-        // } else {
-        //     std::cout << "\nFile transfer interrupted or completed.\n";
-        //     break;
-        // }
     }
 
     file.close();
